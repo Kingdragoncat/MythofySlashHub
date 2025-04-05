@@ -1,0 +1,8 @@
+{
+  "id": "hubcommand",
+  "name": "HubCommand",
+  "version": "1.0.0",
+  "description": "A simple plugin that adds a /hub command",
+  "authors": ["Kingdragoncat", "Mythofy"],
+  "main": "net.mythofy.hubcommand.HubCommand"
+}

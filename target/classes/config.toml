@@ -1,0 +1,16 @@
+# MythofySlashHub Configuration
+
+# The name of your hub server as defined in velocity.toml
+hub-server = "hub"
+
+# Whether to enable a cooldown between uses of the command
+enable-cooldown = false
+
+# The cooldown period in seconds (only used if enable-cooldown is true)
+cooldown-seconds = 5
+
+# Message shown when connecting to hub (supports color codes with '&')
+success-message = "&aConnecting to the hub server..."
+
+# Message shown when hub server is unavailable (supports color codes with '&')
+error-message = "&cThe hub server is curr
