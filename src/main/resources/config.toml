@@ -1,4 +1,4 @@
-# MythofySlashHub Configuration
+# Configuration
 
 # The name of your hub server as defined in velocity.toml
 hub-server = "hub"
