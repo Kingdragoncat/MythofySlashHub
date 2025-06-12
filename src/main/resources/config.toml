@@ -1,16 +1,38 @@
-# Configuration
+# MythofySlashHub Configuration
 
-# The name of your hub server as defined in velocity.toml
+# === Server Aliases ===
+# Define your server aliases here. The key is the command, the value is the Velocity server name.
 hub-server = "hub"
+minigames-server = "minigames"
+dev-server = "dev"
 
-# Whether to enable a cooldown between uses of the command
+# === Cooldown Settings ===
+# Enable or disable cooldown between uses of server commands.
 enable-cooldown = false
-
-# The cooldown period in seconds (only used if enable-cooldown is true)
+# Cooldown period in seconds (only used if enable-cooldown is true).
 cooldown-seconds = 5
 
-# Message shown when connecting to hub (supports color codes with '&')
+# === Default Messages ===
+# These messages support color codes with '&'.
 success-message = "&aConnecting to the hub server..."
+error-message = "&cThe hub server is currently unavailable."
+already-in-server-message = "&eYou are already on this server!"
 
-# Message shown when hub server is unavailable (supports color codes with '&')
-error-message = "&cThe hub server is currently unavailable
+# === Per-Server Messages (Optional) ===
+# You can override the default messages for specific servers.
+minigames-success-message = "&aConnecting to minigames!"
+minigames-error-message = "&cMinigames server is down."
+minigames-already-in-message = "&eYou are already in minigames!"
+
+dev-success-message = "&aConnecting to the dev server!"
+dev-error-message = "&cDev server is currently unavailable."
+dev-already-in-message = "&eYou are already in the dev server!"
+
+# === /send Command Settings ===
+# Messages for the /send command (supports color codes and placeholders).
+send-message = "&aYou have sent {target} to {server}!"
+sent-message = "&eYou have been sent to {server} by {sender}!"
+
+# Require confirmation for mass send commands.
+require-confirmation-send-all = true      # /send * <server>
+require-confirmation-send-current = true  # /send *- <server>
