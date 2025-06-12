@@ -7,6 +7,8 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import org.slf4j.Logger;
 
 import java.util.*;
@@ -65,8 +67,7 @@ public class MythofySlashSend implements SimpleCommand {
             String destArg = args[0];
             if (label.equalsIgnoreCase("sendall")) {
                 if (requireConfirmationAll) {
-                    pendingSends.put(sender.getUniqueId(), new PendingSend("*", destArg, null));
-                    sender.sendMessage(Component.text("Are you sure you want to send ALL players to " + destArg + "? Type /send confirm to proceed.", NamedTextColor.RED));
+                    sendConfirmationMessage(sender, "*", destArg);
                     return;
                 } else {
                     sendAll(sender, destArg);
@@ -74,8 +75,7 @@ public class MythofySlashSend implements SimpleCommand {
                 }
             } else if (label.equalsIgnoreCase("sendcurrent")) {
                 if (requireConfirmationCurrent) {
-                    pendingSends.put(sender.getUniqueId(), new PendingSend("*-", destArg, null));
-                    sender.sendMessage(Component.text("Are you sure you want to send everyone on your server to " + destArg + "? Type /send confirm to proceed.", NamedTextColor.RED));
+                    sendConfirmationMessage(sender, "*-", destArg);
                     return;
                 } else {
                     sendCurrent(sender, destArg);
@@ -114,8 +114,7 @@ public class MythofySlashSend implements SimpleCommand {
         if (targetArg.equals("*")) {
             // /send * <server>
             if (requireConfirmationAll) {
-                pendingSends.put(sender.getUniqueId(), new PendingSend("*", destArg, null));
-                sender.sendMessage(Component.text("Are you sure you want to send ALL players to " + destArg + "? Type /send confirm to proceed.", NamedTextColor.RED));
+                sendConfirmationMessage(sender, "*", destArg);
                 return;
             } else {
                 sendAll(sender, destArg);
@@ -124,8 +123,7 @@ public class MythofySlashSend implements SimpleCommand {
         } else if (targetArg.equals("*-")) {
             // /send *- <server>
             if (requireConfirmationCurrent) {
-                pendingSends.put(sender.getUniqueId(), new PendingSend("*-", destArg, null));
-                sender.sendMessage(Component.text("Are you sure you want to send everyone on your server to " + destArg + "? Type /send confirm to proceed.", NamedTextColor.RED));
+                sendConfirmationMessage(sender, "*-", destArg);
                 return;
             } else {
                 sendCurrent(sender, destArg);
@@ -151,6 +149,17 @@ public class MythofySlashSend implements SimpleCommand {
             // /send <player> <server>
             sendPlayersToServer(sender, new String[]{targetArg}, destArg);
         }
+    }
+
+    private void sendConfirmationMessage(Player sender, String type, String server) {
+        pendingSends.put(sender.getUniqueId(), new PendingSend(type, server, null));
+        String msg = type.equals("*")
+                ? "Are you sure you want to send ALL players to " + server + "?"
+                : "Are you sure you want to send everyone on your server to " + server + "?";
+        Component confirm = Component.text("[Click here to CONFIRM]", NamedTextColor.GREEN)
+                .clickEvent(ClickEvent.runCommand("/send confirm"))
+                .hoverEvent(HoverEvent.showText(Component.text("Click to confirm this action!")));
+        sender.sendMessage(Component.text(msg, NamedTextColor.RED).append(Component.space()).append(confirm));
     }
 
     private void sendAll(Player sender, String serverName) {
@@ -220,5 +229,56 @@ public class MythofySlashSend implements SimpleCommand {
             result = result.replace("{" + entry.getKey() + "}", entry.getValue());
         }
         return Component.text(result.replace("&", "§"));
+    }
+
+    @Override
+    public boolean hasPermission(Invocation invocation) {
+        return true;
+    }
+
+    @Override
+    public List<String> suggest(Invocation invocation) {
+        String[] args = invocation.arguments();
+        List<String> suggestions = new ArrayList<>();
+
+        if (args.length == 0) {
+            suggestions.add("confirm");
+            suggestions.add("*");
+            suggestions.add("*-");
+            for (Player p : server.getAllPlayers()) {
+                suggestions.add(p.getUsername());
+            }
+            return suggestions;
+        }
+
+        if (args.length == 1) {
+            String arg = args[0].toLowerCase();
+            if ("confirm".startsWith(arg)) suggestions.add("confirm");
+            if ("*".startsWith(arg)) suggestions.add("*");
+            if ("*-".startsWith(arg)) suggestions.add("*-");
+            for (Player p : server.getAllPlayers()) {
+                if (p.getUsername().toLowerCase().startsWith(arg)) {
+                    suggestions.add(p.getUsername());
+                }
+            }
+            return suggestions;
+        }
+
+        if (args.length == 2) {
+            String arg = args[1].toLowerCase();
+            for (RegisteredServer s : server.getAllServers()) {
+                if (s.getServerInfo().getName().toLowerCase().startsWith(arg)) {
+                    suggestions.add(s.getServerInfo().getName());
+                }
+            }
+            for (Player p : server.getAllPlayers()) {
+                if (p.getUsername().toLowerCase().startsWith(arg)) {
+                    suggestions.add(p.getUsername());
+                }
+            }
+            return suggestions;
+        }
+
+        return suggestions;
     }
 }
