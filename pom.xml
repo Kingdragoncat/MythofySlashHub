@@ -6,7 +6,7 @@
 
     <groupId>net.mythofy</groupId>
     <artifactId>MythofySlashHub</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.4.2</version>
     <packaging>jar</packaging>
 
     <name>MythofySlashHub</name>

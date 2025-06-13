@@ -33,6 +33,26 @@ dev-already-in-message = "&eYou are already in the dev server!"
 send-message = "&aYou have sent {target} to {server}!"
 sent-message = "&eYou have been sent to {server} by {sender}!"
 
+# Permissions layout:
+# - slashhub.send: to send individual players
+# - slashhub.send.server: to send all players from a server (/send +<server> <server>)
+# - slashhub.send.all: to send all players on the network (/send all <server>)
+# - slashhub.send.bypass: to bypass being sent by /send
+# - slashhub.send.bypass.override: to use -f or force and override bypass
+
+# Permissions required:
+# - slashhub.send: for normal /send
+# - slashhub.send.all: for /send all <server>
+# - slashhub.send.server: for /send +<server> <server>
+# - slashhub.send.bypass: players with this permission cannot be sent by /send unless forced
+# - slashhub.send.bypass.override: allows use of -f or force to override bypass
+
+# To force sending players with bypass, add -f or force as the last argument:
+# /send <player> <server> -f
+# /send all <server> -f
+# /send +<server> <server> force
+
 # Require confirmation for mass send commands.
-require-confirmation-send-all = true      # /send * <server>
-require-confirmation-send-current = true  # /send *- <server>
+require-confirmation-send-all = true      # /send all <server>
+require-confirmation-send-current = true  # /send +<server> <server>
+require-confirmation-send-multi = true    # /send <player1,player2,...> <server> (multi)

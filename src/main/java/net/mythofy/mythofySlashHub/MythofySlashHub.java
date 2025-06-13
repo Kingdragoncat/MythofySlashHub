@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -43,12 +44,6 @@ public class MythofySlashHub {
     // Cooldown tracking
     private final Map<UUID, Long> cooldowns = new HashMap<>();
 
-    // Add these fields for /send config
-    private String sendMessage;
-    private String sentMessage;
-    private boolean requireConfirmationAll;
-    private boolean requireConfirmationCurrent;
-
     @Inject
     public MythofySlashHub(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
         this.server = server;
@@ -64,12 +59,6 @@ public class MythofySlashHub {
         for (String command : serverAliases.keySet()) {
             server.getCommandManager().register(command, new ServerCommand(command));
         }
-
-        // Register /send and its aliases
-        MythofySlashSend sendCommand = new MythofySlashSend(server, logger, sendMessage, sentMessage, requireConfirmationAll, requireConfirmationCurrent);
-        server.getCommandManager().register("send", sendCommand);
-        server.getCommandManager().register("sendall", sendCommand);
-        server.getCommandManager().register("sendcurrent", sendCommand);
 
         logger.info("MythofySlashHub plugin has been enabled!");
     }
@@ -110,12 +99,7 @@ public class MythofySlashHub {
                         "minigames-already-in-message = \"&eYou are already in minigames!\"\n\n" +
                         "dev-success-message = \"&aConnecting to the dev server!\"\n" +
                         "dev-error-message = \"&cDev server is currently unavailable.\"\n" +
-                        "dev-already-in-message = \"&eYou are already in the dev server!\"\n\n" +
-                        "# /send command messages\n" +
-                        "send-message = \"&aYou have sent {target} to {server}!\"\n" +
-                        "sent-message = \"&eYou have been sent to {server} by {sender}!\"\n" +
-                        "require-confirmation-send-all = true\n" +
-                        "require-confirmation-send-current = true\n"
+                        "dev-already-in-message = \"&eYou are already in the dev server!\"\n"
                 );
                 logger.info("Default config.toml created at {}", configPath);
             } catch (IOException e) {
@@ -156,12 +140,6 @@ public class MythofySlashHub {
             defaultErrorMessage = config.getString("error-message", "&cThe hub server is currently unavailable.");
             defaultAlreadyInServerMessage = config.getString("already-in-server-message", "&eYou are already on this server!");
 
-            // /send config
-            sendMessage = config.getString("send-message", "&aYou have sent {target} to {server}!");
-            sentMessage = config.getString("sent-message", "&eYou have been sent to {server} by {sender}!");
-            requireConfirmationAll = config.getBoolean("require-confirmation-send-all", true);
-            requireConfirmationCurrent = config.getBoolean("require-confirmation-send-current", true);
-
             logger.info("Configuration loaded with server commands: {}", serverAliases);
         } catch (Exception e) {
             logger.error("Failed to load configuration, using defaults", e);
@@ -174,10 +152,6 @@ public class MythofySlashHub {
             defaultSuccessMessage = "&aConnecting to the hub server...";
             defaultErrorMessage = "&cThe hub server is currently unavailable.";
             defaultAlreadyInServerMessage = "&eYou are already on this server!";
-            sendMessage = "&aYou have sent {target} to {server}!";
-            sentMessage = "&eYou have been sent to {server} by {sender}!";
-            requireConfirmationAll = true;
-            requireConfirmationCurrent = true;
         }
     }
 

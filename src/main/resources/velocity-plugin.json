@@ -1,7 +1,7 @@
 {
   "id": "mythofyslashhub",
   "name": "MythofySlashHub",
-  "version": "1.4.0",
+  "version": "1.4.2",
   "description": "A simple plugin that adds configurable server commands like /hub.",
   "authors": ["Kingdragoncat", "Mythofy"],
   "main": "net.mythofy.mythofySlashHub.MythofySlashHub",
