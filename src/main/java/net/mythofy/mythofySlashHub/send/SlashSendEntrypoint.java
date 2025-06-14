@@ -14,27 +14,24 @@ public class SlashSendEntrypoint {
 
     private final ProxyServer server;
     private final Logger logger;
+    private final Object plugin; // Reference to the plugin instance
 
     @Inject
-    public SlashSendEntrypoint(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
+    public SlashSendEntrypoint(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory, Object plugin) {
         this.server = server;
         this.logger = logger;
+        this.plugin = plugin;
     }
 
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) {
-        // Register /send with tab completion
+        // Register /send with the unified command executor (tab completion is now in the same class)
+        SlashSendCommand sendCommand = new SlashSendCommand(server);
         CommandMeta sendMeta = server.getCommandManager()
             .metaBuilder("send")
-            .tabCompleter(new SlashSendTabCompletion(server))
-            .permission("MythofySlashHub.Send")
+            .plugin(plugin)
             .build();
-
-        server.getCommandManager().register(sendMeta, new SlashSend1PS(server));
-
-        server.getCommandManager().register("sendmp", new SlashSendMPS(server));
-        server.getCommandManager().register("sendss", new SlashSendSS(server));
-        server.getCommandManager().register("sendas", new SlashSendAS(server));
-        logger.info("Registered /send, /sendmp, /sendss, and /sendas commands.");
+        server.getCommandManager().register(sendMeta, sendCommand);
+        logger.info("Registered /send command with all subcommands and tab completion.");
     }
 }

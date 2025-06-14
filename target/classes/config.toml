@@ -1,0 +1,38 @@
+# MythofySlashHub Configuration
+
+# === Server Aliases ===
+hub-server = "hub"
+minigames-server = "minigames"
+dev-server = "dev"
+build-server = "build"
+lifesteal-server = "lifesteal"
+box-server = "box"
+
+# === Cooldown Settings ===
+enable-cooldown = false
+cooldown-seconds = 5
+
+# === Default Messages ===
+success-message = "&aConnecting to the hub server..."
+error-message = "&cThe hub server is currently unavailable."
+already-in-server-message = "&eYou are already on this server!"
+
+minigames-success-message = "&aConnecting to minigames!"
+minigames-error-message = "&cMinigames server is down."
+minigames-already-in-message = "&eYou are already in minigames!"
+
+dev-success-message = "&aConnecting to the dev server!"
+dev-error-message = "&cDev server is currently unavailable."
+dev-already-in-message = "&eYou are already in the dev server!"
+
+build-success-message = "&aConnecting to the build server!"
+build-error-message = "&cBuild server is currently unavailable."
+build-already-in-message = "&eYou are already in the build server!"
+
+lifesteal-success-message = "&aConnecting to the lifesteal server!"
+lifesteal-error-message = "&cLifesteal server is currently unavailable."
+lifesteal-already-in-message = "&eYou are already in the lifesteal server!"
+
+box-success-message = "&aConnecting to the box server!"
+box-error-message = "&cBox server is currently unavailable."
+box-already-in-message = "&eYou are already in the box server!"

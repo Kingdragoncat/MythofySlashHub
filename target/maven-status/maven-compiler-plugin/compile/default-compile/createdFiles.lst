@@ -1,0 +1,8 @@
+net\mythofy\mythofySlashHub\send\SlashSendEntrypoint.class
+net\mythofy\mythofySlashHub\reload.class
+net\mythofy\mythofySlashHub\configmanager.class
+net\mythofy\mythofySlashHub\SlashHubLogic.class
+net\mythofy\mythofySlashHub\MythofySlashHub.class
+net\mythofy\mythofySlashHub\send\SlashSendCommand.class
+net\mythofy\mythofySlashHub\send\SlashSendTabCompletion.class
+net\mythofy\mythofySlashHub\SlashHubLogic$ServerCommand.class

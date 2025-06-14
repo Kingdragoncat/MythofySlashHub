@@ -65,7 +65,7 @@ public class MythofySlashHub {
         server.getCommandManager().register("reload", new reload(this));
 
         // Register /send command via SlashSendEntrypoint
-        slashSendEntrypoint = new SlashSendEntrypoint(server, logger, dataDirectory);
+        slashSendEntrypoint = new SlashSendEntrypoint(server, logger, dataDirectory, this);
         slashSendEntrypoint.onProxyInitialization(event);
 
         logger.info("MythofySlashHub plugin has been enabled!");

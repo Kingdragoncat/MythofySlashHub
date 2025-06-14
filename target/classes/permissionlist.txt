@@ -1,0 +1,20 @@
+# MythofySlashHub Permissions Guide
+
+# This file is auto-generated in your plugin data folder with all current server permissions.
+
+# Per-command permissions (replace <command> with the alias, e.g., hub, minigames, dev, etc):
+MythofySlashHub.command.<command>
+
+# Send commands:
+MythofySlashHub.sendall    # Allows use of /send all <server> and /send <fromServer> <toServer>
+MythofySlashHub.send       # Allows use of /send <player> <server> and /send [<player1> ...] <server>
+
+# Per-server go permissions (auto-generated in plugin data folder):
+MythofySlashHub.Gohub         # Allows use of /hub to go to hub
+MythofySlashHub.Gominigames   # Allows use of /minigames to go to minigames
+MythofySlashHub.Godev         # Allows use of /dev to go to dev
+MythofySlashHub.Gobuild       # Allows use of /build to go to build
+MythofySlashHub.Golifesteal   # Allows use of /lifesteal to go to lifesteal
+MythofySlashHub.Gobox         # Allows use of /box to go to box
+
+
