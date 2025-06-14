@@ -1,25 +1,22 @@
 # MythofySlashHub Configuration
 
 # === Server Aliases ===
-# Define your server aliases here. The key is the command, the value is the Velocity server name.
 hub-server = "hub"
 minigames-server = "minigames"
 dev-server = "dev"
+build-server = "build"
+lifesteal-server = "lifesteal"
+box-server = "box"
 
 # === Cooldown Settings ===
-# Enable or disable cooldown between uses of server commands.
 enable-cooldown = false
-# Cooldown period in seconds (only used if enable-cooldown is true).
 cooldown-seconds = 5
 
 # === Default Messages ===
-# These messages support color codes with '&'.
 success-message = "&aConnecting to the hub server..."
 error-message = "&cThe hub server is currently unavailable."
 already-in-server-message = "&eYou are already on this server!"
 
-# === Per-Server Messages (Optional) ===
-# You can override the default messages for specific servers.
 minigames-success-message = "&aConnecting to minigames!"
 minigames-error-message = "&cMinigames server is down."
 minigames-already-in-message = "&eYou are already in minigames!"
@@ -28,31 +25,14 @@ dev-success-message = "&aConnecting to the dev server!"
 dev-error-message = "&cDev server is currently unavailable."
 dev-already-in-message = "&eYou are already in the dev server!"
 
-# === /send Command Settings ===
-# Messages for the /send command (supports color codes and placeholders).
-send-message = "&aYou have sent {target} to {server}!"
-sent-message = "&eYou have been sent to {server} by {sender}!"
+build-success-message = "&aConnecting to the build server!"
+build-error-message = "&cBuild server is currently unavailable."
+build-already-in-message = "&eYou are already in the build server!"
 
-# Permissions layout:
-# - slashhub.send: to send individual players
-# - slashhub.send.server: to send all players from a server (/send +<server> <server>)
-# - slashhub.send.all: to send all players on the network (/send all <server>)
-# - slashhub.send.bypass: to bypass being sent by /send
-# - slashhub.send.bypass.override: to use -f or force and override bypass
+lifesteal-success-message = "&aConnecting to the lifesteal server!"
+lifesteal-error-message = "&cLifesteal server is currently unavailable."
+lifesteal-already-in-message = "&eYou are already in the lifesteal server!"
 
-# Permissions required:
-# - slashhub.send: for normal /send
-# - slashhub.send.all: for /send all <server>
-# - slashhub.send.server: for /send +<server> <server>
-# - slashhub.send.bypass: players with this permission cannot be sent by /send unless forced
-# - slashhub.send.bypass.override: allows use of -f or force to override bypass
-
-# To force sending players with bypass, add -f or force as the last argument:
-# /send <player> <server> -f
-# /send all <server> -f
-# /send +<server> <server> force
-
-# Require confirmation for mass send commands.
-require-confirmation-send-all = true      # /send all <server>
-require-confirmation-send-current = true  # /send +<server> <server>
-require-confirmation-send-multi = true    # /send <player1,player2,...> <server> (multi)
+box-success-message = "&aConnecting to the box server!"
+box-error-message = "&cBox server is currently unavailable."
+box-already-in-message = "&eYou are already in the box server!"
