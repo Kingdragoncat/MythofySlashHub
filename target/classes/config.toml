@@ -36,3 +36,22 @@ lifesteal-already-in-message = "&eYou are already in the lifesteal server!"
 box-success-message = "&aConnecting to the box server!"
 box-error-message = "&cBox server is currently unavailable."
 box-already-in-message = "&eYou are already in the box server!"
+
+# === Compass and GUI Settings ===
+[compass]
+# Enable or disable the compass feature
+enabled = true
+# Slot in the inventory for the compass (0-9 for hotbar)
+slot = 4
+# Material for the compass item (e.g., "COMPASS")
+material = "COMPASS"
+# Display name for the compass item
+name = "&bServer Navigator"
+# Lore for the compass item (use \n for new lines)
+lore = "&7Click to open the server menu!"
+
+[gui]
+# Enable or disable the server navigation GUI
+enabled = true
+# List of servers to exclude from the GUI
+excluded_servers = ["dev", "build"]

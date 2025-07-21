@@ -25,11 +25,35 @@ public class SlashSendCommand implements SimpleCommand {
     public void execute(Invocation invocation) {
         CommandSource source = invocation.source();
         String[] args = invocation.arguments();
-
         if (args.length == 0) {
             sendUsage(source);
             return;
         }
+
+        // Parse flags (only at the end)
+        List<String> argList = new ArrayList<>(Arrays.asList(args));
+        boolean force = false;
+        boolean silent = false;
+        for (int i = argList.size() - 1; i >= 0; i--) {
+            String a = argList.get(i);
+            if ("--force".equalsIgnoreCase(a)) {
+                force = true;
+                argList.remove(i);
+            } else if ("--silent".equalsIgnoreCase(a)) {
+                silent = true;
+                argList.remove(i);
+            }
+        }
+        args = argList.toArray(new String[0]);
+
+        // Permission check for --force
+        if (force && !source.hasPermission("MythofySlashHub.Send.Override")) {
+            source.sendMessage(Component.text("You do not have permission to use --force.", NamedTextColor.RED));
+            return;
+        }
+
+        // Confirmation bypass
+        boolean bypassConfirmation = source.hasPermission("MythofySlashHub.SendBypass");
 
         // Confirmation logic
         if (args.length == 1 && (args[0].equalsIgnoreCase("confirm") || args[0].equalsIgnoreCase("deny"))) {
@@ -46,17 +70,17 @@ public class SlashSendCommand implements SimpleCommand {
             String action = pendingConfirmations.remove(source);
             if (action.startsWith("all:")) {
                 String toServer = action.substring(4);
-                performSendAll(source, toServer);
+                performSendAll(source, toServer, force, silent);
             } else if (action.startsWith("ss:")) {
                 String[] parts = action.split(":");
                 if (parts.length == 3) {
-                    performSendServerToServer(source, parts[1], parts[2]);
+                    performSendServerToServer(source, parts[1], parts[2], force, silent);
                 }
             }
             return;
         }
 
-        // /send all <server>
+        // /send all <server> [flags]
         if (args.length == 2 && args[0].equalsIgnoreCase("all")) {
             if (!source.hasPermission("MythofySlashHub.Sendall")) {
                 source.sendMessage(Component.text("You do not have permission to use this command.", NamedTextColor.RED));
@@ -66,6 +90,10 @@ public class SlashSendCommand implements SimpleCommand {
             Optional<RegisteredServer> to = server.getServer(toServer);
             if (to.isEmpty()) {
                 source.sendMessage(Component.text("Target server not found: " + toServer, NamedTextColor.RED));
+                return;
+            }
+            if (bypassConfirmation) {
+                performSendAll(source, toServer, force, silent);
                 return;
             }
             Component confirmMsg = Component.text("Are you sure you want to send ALL players to ", NamedTextColor.YELLOW)
@@ -78,17 +106,21 @@ public class SlashSendCommand implements SimpleCommand {
                         .clickEvent(ClickEvent.runCommand("/send deny")));
             source.sendMessage(confirmMsg);
             source.sendMessage(Component.text("Or type /send confirm or /send deny.", NamedTextColor.GRAY));
-            pendingConfirmations.put(source, "all:" + toServer);
+            pendingConfirmations.put(source, "all:" + toServer + ":" + (force ? "force" : "") + ":" + (silent ? "silent" : ""));
             return;
         }
 
-        // /send <server1> <server2> (server-to-server)
+        // /send <server1> <server2> [flags] (server-to-server)
         if (args.length == 2) {
             Optional<RegisteredServer> from = server.getServer(args[0]);
             Optional<RegisteredServer> to = server.getServer(args[1]);
             if (from.isPresent() && to.isPresent()) {
                 if (!source.hasPermission("MythofySlashHub.Sendall")) {
                     source.sendMessage(Component.text("You do not have permission to use this command.", NamedTextColor.RED));
+                    return;
+                }
+                if (bypassConfirmation) {
+                    performSendServerToServer(source, args[0], args[1], force, silent);
                     return;
                 }
                 Component confirmMsg = Component.text("Are you sure you want to send all players from ", NamedTextColor.YELLOW)
@@ -103,12 +135,12 @@ public class SlashSendCommand implements SimpleCommand {
                             .clickEvent(ClickEvent.runCommand("/send deny")));
                 source.sendMessage(confirmMsg);
                 source.sendMessage(Component.text("Or type /send confirm or /send deny.", NamedTextColor.GRAY));
-                pendingConfirmations.put(source, "ss:" + args[0] + ":" + args[1]);
+                pendingConfirmations.put(source, "ss:" + args[0] + ":" + args[1] + ":" + (force ? "force" : "") + ":" + (silent ? "silent" : ""));
                 return;
             }
         }
 
-        // /send <player> <server>
+        // /send <player> <server> [flags]
         if (args.length == 2) {
             if (!source.hasPermission("MythofySlashHub.Send")) {
                 source.sendMessage(Component.text("You do not have permission to use this command.", NamedTextColor.RED));
@@ -127,10 +159,11 @@ public class SlashSendCommand implements SimpleCommand {
                 return;
             }
             Player player = targetPlayer.get();
+            final boolean silentFinal = silent;
             player.createConnectionRequest(targetServer.get()).connect().thenAccept(result -> {
                 if (result.isSuccessful()) {
                     source.sendMessage(Component.text("Sent " + playerName + " to " + serverName + ".", NamedTextColor.GREEN));
-                    player.sendMessage(Component.text("You have been sent to " + serverName + ".", NamedTextColor.YELLOW));
+                    if (!silentFinal) player.sendMessage(Component.text("You have been sent to " + serverName + ".", NamedTextColor.YELLOW));
                 } else {
                     source.sendMessage(Component.text("Failed to send player: " + result.getReasonComponent().map(Component::examinableName).orElse("Unknown error"), NamedTextColor.RED));
                 }
@@ -138,7 +171,7 @@ public class SlashSendCommand implements SimpleCommand {
             return;
         }
 
-        // /send <player1> <player2> ... <server> (multi-player send)
+        // /send <player1> <player2> ... <server> [flags] (multi-player send)
         if (args.length > 2) {
             if (!source.hasPermission("MythofySlashHub.MultiSend")) {
                 source.sendMessage(Component.text("You do not have permission to use this command.", NamedTextColor.RED));
@@ -160,8 +193,9 @@ public class SlashSendCommand implements SimpleCommand {
                     continue;
                 }
                 Player player = targetPlayer.get();
+                final boolean silentFinal = silent;
                 player.createConnectionRequest(targetServer.get()).connect().thenAccept(result -> {
-                    if (result.isSuccessful()) {
+                    if (result.isSuccessful() && !silentFinal) {
                         player.sendMessage(Component.text("You have been sent to " + serverName + ".", NamedTextColor.YELLOW));
                     }
                 });
@@ -179,20 +213,22 @@ public class SlashSendCommand implements SimpleCommand {
         sendUsage(source);
     }
 
-    private void performSendAll(CommandSource source, String toServer) {
+    private void performSendAll(CommandSource source, String toServer, boolean force, boolean silent) {
         Optional<RegisteredServer> to = server.getServer(toServer);
         if (to.isEmpty()) {
             source.sendMessage(Component.text("Target server is no longer available.", NamedTextColor.RED));
             return;
         }
         Collection<Player> playersToSend = new ArrayList<>(server.getAllPlayers());
+        // If force: skip filters (future: vanished, etc.)
+        // If not force: you can add filters here if needed
         if (playersToSend.isEmpty()) {
             source.sendMessage(Component.text("No players found on the network.", NamedTextColor.YELLOW));
             return;
         }
         for (Player player : playersToSend) {
             player.createConnectionRequest(to.get()).connect().thenAccept(result -> {
-                if (result.isSuccessful()) {
+                if (result.isSuccessful() && !silent) {
                     player.sendMessage(Component.text("You have been sent to " + toServer + ".", NamedTextColor.YELLOW));
                 }
             });
@@ -200,7 +236,7 @@ public class SlashSendCommand implements SimpleCommand {
         source.sendMessage(Component.text("Sent " + playersToSend.size() + " player(s) to " + toServer + ".", NamedTextColor.GREEN));
     }
 
-    private void performSendServerToServer(CommandSource source, String fromServer, String toServer) {
+    private void performSendServerToServer(CommandSource source, String fromServer, String toServer, boolean force, boolean silent) {
         Optional<RegisteredServer> from = server.getServer(fromServer);
         Optional<RegisteredServer> to = server.getServer(toServer);
         if (from.isEmpty() || to.isEmpty()) {
@@ -214,13 +250,15 @@ public class SlashSendCommand implements SimpleCommand {
                 playersToSend.add(player);
             }
         }
+        // If force: skip filters (future: vanished, etc.)
+        // If not force: you can add filters here if needed
         if (playersToSend.isEmpty()) {
             source.sendMessage(Component.text("No players found on server: " + fromServer, NamedTextColor.YELLOW));
             return;
         }
         for (Player player : playersToSend) {
             player.createConnectionRequest(to.get()).connect().thenAccept(result -> {
-                if (result.isSuccessful()) {
+                if (result.isSuccessful() && !silent) {
                     player.sendMessage(Component.text("You have been sent to " + toServer + ".", NamedTextColor.YELLOW));
                 }
             });
@@ -235,6 +273,9 @@ public class SlashSendCommand implements SimpleCommand {
         source.sendMessage(Component.text("/send all <server> (Send all players, requires confirmation)", NamedTextColor.GRAY));
         source.sendMessage(Component.text("/send <server1> <server2> (Send all from one server to another, requires confirmation)", NamedTextColor.GRAY));
         source.sendMessage(Component.text("/send confirm | /send deny (Confirm/cancel)", NamedTextColor.GRAY));
+        source.sendMessage(Component.text("Flags:", NamedTextColor.YELLOW));
+        source.sendMessage(Component.text("--force (Bypass confirmation, requires MythofySlashHub.Send.Override)", NamedTextColor.GRAY));
+        source.sendMessage(Component.text("--silent (Suppress player messages)", NamedTextColor.GRAY));
     }
 
     @Override
@@ -246,7 +287,31 @@ public class SlashSendCommand implements SimpleCommand {
         List<String> playerNames = server.getAllPlayers().stream().map(Player::getUsername).toList();
         List<String> serverNames = server.getAllServers().stream().map(s -> s.getServerInfo().getName()).toList();
         boolean hasPending = pendingConfirmations.containsKey(source);
+        boolean canForce = source.hasPermission("MythofySlashHub.Send.Override");
 
+        // Parse out flags at the end
+        Set<String> usedFlags = new HashSet<>();
+        int flagStart = args.length;
+        for (int i = args.length - 1; i >= 0; i--) {
+            String a = args[i];
+            if (a.equalsIgnoreCase("--force") || a.equalsIgnoreCase("--silent")) {
+                usedFlags.add(a.toLowerCase());
+                flagStart = i;
+            } else {
+                break;
+            }
+        }
+        // Only suggest flags at the end
+        boolean atFlagPosition = flagStart == args.length;
+
+        // Helper: suggest flags if not already used
+        List<String> flagSuggestions = new ArrayList<>();
+        if (atFlagPosition) {
+            if (!usedFlags.contains("--silent")) flagSuggestions.add("--silent");
+            if (canForce && !usedFlags.contains("--force")) flagSuggestions.add("--force");
+        }
+
+        // /send <TAB>
         if (args.length == 0) {
             completions.add("all");
             completions.addAll(playerNames);
@@ -255,8 +320,10 @@ public class SlashSendCommand implements SimpleCommand {
                 completions.add("confirm");
                 completions.add("deny");
             }
+            completions.addAll(flagSuggestions);
             return completions;
         }
+        // /send <firstArg> <TAB>
         if (args.length == 1) {
             String arg = args[0].toLowerCase();
             if ("all".startsWith(arg)) completions.add("all");
@@ -266,40 +333,61 @@ public class SlashSendCommand implements SimpleCommand {
                 if ("confirm".startsWith(arg)) completions.add("confirm");
                 if ("deny".startsWith(arg)) completions.add("deny");
             }
+            if (atFlagPosition) completions.addAll(flagSuggestions);
             return completions;
         }
-        if (args.length == 2 && args[0].equalsIgnoreCase("all")) {
-            String partial = args[1].toLowerCase();
-            return serverNames.stream().filter(name -> name.toLowerCase().startsWith(partial)).toList();
+        // /send all <TAB> (only server names, then flags)
+        if (args.length >= 2 && args[0].equalsIgnoreCase("all")) {
+            if (flagStart == 2) {
+                String partial = args[1].toLowerCase();
+                completions.addAll(serverNames.stream().filter(name -> name.toLowerCase().startsWith(partial)).toList());
+                if (atFlagPosition) completions.addAll(flagSuggestions);
+                return completions;
+            } else if (atFlagPosition) {
+                completions.addAll(flagSuggestions);
+                return completions;
+            }
         }
+        // /send confirm or /send deny (no further completion)
         if (args.length == 1 && (args[0].equalsIgnoreCase("confirm") || args[0].equalsIgnoreCase("deny"))) {
             return Collections.emptyList();
         }
+        // /send <player1> <player2> ... <TAB> (suggest more player names, then server names at last arg, then flags)
         if (args.length >= 2) {
             boolean allPlayers = true;
-            for (int i = 0; i < args.length - 1; i++) {
+            for (int i = 0; i < flagStart - 1; i++) {
                 if (!playerNames.contains(args[i])) {
                     allPlayers = false;
                     break;
                 }
             }
-            if (allPlayers) {
-                Set<String> used = new HashSet<>(Arrays.asList(args).subList(0, args.length - 1));
-                String partial = args[args.length - 1].toLowerCase();
-                if (playerNames.contains(args[args.length - 1])) {
-                    return serverNames;
+            if (allPlayers && flagStart > 1) {
+                Set<String> used = new HashSet<>(Arrays.asList(args).subList(0, flagStart - 1));
+                String partial = args[flagStart - 1].toLowerCase();
+                if (playerNames.contains(args[flagStart - 1])) {
+                    completions.addAll(serverNames);
+                    if (atFlagPosition) completions.addAll(flagSuggestions);
+                    return completions;
                 }
                 completions.addAll(playerNames.stream().filter(name -> !used.contains(name) && name.toLowerCase().startsWith(partial)).toList());
                 completions.addAll(serverNames.stream().filter(name -> name.toLowerCase().startsWith(partial)).toList());
+                if (atFlagPosition) completions.addAll(flagSuggestions);
                 return completions;
             }
         }
-        if (args.length == 2) {
+        // /send <server1> <server2> [flags] (server-to-server)
+        if (flagStart == 2 && args.length >= 2) {
             String fromServer = args[0];
             if (serverNames.contains(fromServer)) {
                 String partial = args[1].toLowerCase();
-                return serverNames.stream().filter(name -> name.toLowerCase().startsWith(partial)).toList();
+                completions.addAll(serverNames.stream().filter(name -> name.toLowerCase().startsWith(partial)).toList());
+                if (atFlagPosition) completions.addAll(flagSuggestions);
+                return completions;
             }
+        }
+        // At the end, only suggest flags if appropriate
+        if (atFlagPosition && !flagSuggestions.isEmpty()) {
+            return flagSuggestions;
         }
         return Collections.emptyList();
     }

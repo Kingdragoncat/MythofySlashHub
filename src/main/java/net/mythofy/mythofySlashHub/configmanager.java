@@ -22,6 +22,13 @@ public class configmanager {
     public boolean enableCooldown;
     public int cooldownSeconds;
 
+    // Compass config (GUI removed)
+    public boolean compassEnabled = true;
+    public int compassSlot = 4;
+    public String compassMaterial = "COMPASS";
+    public String compassName = "&bServer Navigator";
+    public String compassLore = "&7Click to open the server menu!";
+
     public configmanager(Path configPath, Logger logger) {
         this.configPath = configPath;
         this.logger = logger;
@@ -58,6 +65,17 @@ public class configmanager {
             defaultSuccessMessage = config.getString("success-message", "&aConnecting to the hub server...");
             defaultErrorMessage = config.getString("error-message", "&cThe hub server is currently unavailable.");
             defaultAlreadyInServerMessage = config.getString("already-in-server-message", "&eYou are already on this server!");
+
+            // Compass config
+            Toml compass = config.getTable("compass");
+            if (compass != null) {
+                compassEnabled = compass.getBoolean("enabled", true);
+                compassSlot = compass.getLong("slot", 4L).intValue();
+                compassMaterial = compass.getString("material", "COMPASS");
+                compassName = compass.getString("name", "&bServer Navigator");
+                compassLore = compass.getString("lore", "&7Click to open the server menu!");
+            }
+            // GUI config removed
 
         } catch (Exception e) {
             logger.error("Failed to load configuration, using defaults", e);

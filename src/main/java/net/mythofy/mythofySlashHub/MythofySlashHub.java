@@ -68,7 +68,20 @@ public class MythofySlashHub {
         slashSendEntrypoint = new SlashSendEntrypoint(server, logger, dataDirectory, this);
         slashSendEntrypoint.onProxyInitialization(event);
 
+        // Plugin startup message
+        logger.info("==============================");
+        logger.info(" MythofySlashHub is starting up");
+        logger.info(" Version: 1.0.0");
+        logger.info(" Author: Mythofy");
+        logger.info("==============================");
         logger.info("MythofySlashHub plugin has been enabled!");
+    }
+
+    @Subscribe
+    public void onProxyShutdown(com.velocitypowered.api.event.proxy.ProxyShutdownEvent event) {
+        logger.info("==============================");
+        logger.info(" MythofySlashHub is shutting down");
+        logger.info("==============================");
     }
 
     public void reloadConfig() {
