@@ -25,6 +25,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import net.mythofy.mythofySlashHub.send.SlashSendEntrypoint;
+import org.bstats.velocity.Metrics;
+import org.bstats.charts.SimplePie;
+import org.bstats.charts.SingleLineChart;
 
 public class MythofySlashHub {
 
@@ -35,12 +38,15 @@ public class MythofySlashHub {
     private configmanager configManager;
     private SlashHubLogic slashHubLogic;
     private SlashSendEntrypoint slashSendEntrypoint;
+    private Metrics metrics;
+    private final Metrics.Factory metricsFactory;
 
     @Inject
-    public MythofySlashHub(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
+    public MythofySlashHub(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory, Metrics.Factory metricsFactory) {
         this.server = server;
         this.logger = logger;
         this.dataDirectory = dataDirectory;
+        this.metricsFactory = metricsFactory;
     }
 
     @Subscribe
@@ -68,11 +74,17 @@ public class MythofySlashHub {
         slashSendEntrypoint = new SlashSendEntrypoint(server, logger, dataDirectory, this);
         slashSendEntrypoint.onProxyInitialization(event);
 
+        // Initialize bStats metrics
+        metrics = metricsFactory.make(this, 26792);
+        metrics.addCustomChart(new SingleLineChart("servers_configured", () -> configManager.serverAliases.size()));
+        metrics.addCustomChart(new SimplePie("cooldown_enabled", () -> configManager.enableCooldown ? "Enabled" : "Disabled"));
+
         // Plugin startup message
         logger.info("==============================");
         logger.info(" MythofySlashHub is starting up");
-        logger.info(" Version: 1.0.0");
+        logger.info(" Version: 1.5.2");
         logger.info(" Author: Mythofy");
+        logger.info(" bStats: Enabled");
         logger.info("==============================");
         logger.info("MythofySlashHub plugin has been enabled!");
     }
