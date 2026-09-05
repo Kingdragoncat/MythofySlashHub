@@ -5,8 +5,8 @@ plugins {
 }
 
 group = 'net.mythofy'
-version = '1.5.2'
-description = 'A simple plugin that adds configurable server commands like /hub.'
+version = '2.0.0'
+description = 'A feature-rich Velocity proxy plugin for server navigation, friends, messaging, and network management.'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -24,9 +24,11 @@ repositories {
 dependencies {
     compileOnly 'com.velocitypowered:velocity-api:3.1.1'
     annotationProcessor 'com.velocitypowered:velocity-api:3.1.1'
-    
+
     implementation 'com.moandjiezana.toml:toml4j:0.7.2'
     implementation 'org.bstats:bstats-velocity:3.0.2'
+    implementation 'net.kyori:adventure-text-minimessage:4.14.0'
+    implementation 'com.google.code.gson:gson:2.10.1'
 }
 
 tasks.withType(JavaCompile) {
@@ -38,20 +40,22 @@ shadowJar {
     archiveClassifier = ''
     archiveBaseName = project.name
     archiveVersion = project.version
-    
+
     relocate 'com.moandjiezana.toml', 'net.mythofy.mythofySlashHub.libs.toml'
     relocate 'org.bstats', 'net.mythofy.mythofySlashHub.libs.bstats'
-    
+    relocate 'com.google.gson', 'net.mythofy.mythofySlashHub.libs.gson'
+
     minimize {
         exclude(dependency('com.moandjiezana.toml:toml4j:.*'))
         exclude(dependency('org.bstats:bstats-velocity:.*'))
+        exclude(dependency('com.google.code.gson:gson:.*'))
     }
-    
+
     mergeServiceFiles()
-    
+
     from(sourceSets.main.output)
     configurations = [project.configurations.runtimeClasspath]
-    
+
     manifest {
         attributes(
             'Implementation-Title': project.name,

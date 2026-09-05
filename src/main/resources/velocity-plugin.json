@@ -1,8 +1,8 @@
 {
   "id": "mythofyslashhub",
   "name": "MythofySlashHub",
-  "version": "1.5.2",
-  "description": "A simple plugin that adds configurable server commands like /hub.",
+  "version": "2.0.0",
+  "description": "A feature-rich Velocity proxy plugin for server navigation, friends, messaging, and network management.",
   "authors": ["Kingdragoncat", "Mythofy"],
   "main": "net.mythofy.mythofySlashHub.MythofySlashHub",
   "source": "https://github.com/Kingdragoncat/MythofySlashHub",

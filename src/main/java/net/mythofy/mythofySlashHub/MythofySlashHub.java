@@ -70,6 +70,24 @@ public class MythofySlashHub {
         // Register /reload command
         server.getCommandManager().register("reload", new reload(this));
 
+        // Register /find command
+        server.getCommandManager().register(
+            server.getCommandManager().metaBuilder("find").build(),
+            new FindPlayerCommand(server)
+        );
+
+        // Register /list (and alias /glist) command
+        server.getCommandManager().register(
+            server.getCommandManager().metaBuilder("list").aliases("glist").build(),
+            new PlayerListCommand(server)
+        );
+
+        // Register /broadcast command
+        server.getCommandManager().register(
+            server.getCommandManager().metaBuilder("broadcast").aliases("alert", "announce").build(),
+            new BroadcastCommand(server)
+        );
+
         // Register /send command via SlashSendEntrypoint
         slashSendEntrypoint = new SlashSendEntrypoint(server, logger, dataDirectory, this);
         slashSendEntrypoint.onProxyInitialization(event);
@@ -169,6 +187,10 @@ public class MythofySlashHub {
                 perms.append("# Send commands:\n");
                 perms.append("MythofySlashHub.sendall    # Allows use of /send all <server> and /send <fromServer> <toServer>\n");
                 perms.append("MythofySlashHub.send       # Allows use of /send <player> <server> and /send [<player1> ...] <server>\n\n");
+                perms.append("# Admin commands:\n");
+                perms.append("mythofyslashhub.command.broadcast    # Allows use of /broadcast (and /alert, /announce)\n\n");
+                perms.append("# General commands:\n");
+                perms.append("# No permission required for /find or /list (available to all players by default)\n\n");
                 perms.append("# Per-server go permissions (auto-generated):\n");
 
                 // Track reserved permission names to avoid conflicts

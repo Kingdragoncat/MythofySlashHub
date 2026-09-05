@@ -29,7 +29,11 @@ public class SlashHubLogic {
     }
 
     private Component formatMessage(String message) {
-        return Component.text(message.replace("&", "§"));
+        if (message.contains("<") && message.contains(">")) {
+            return net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().deserialize(message);
+        } else {
+            return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacyAmpersand().deserialize(message);
+        }
     }
 
     private class ServerCommand implements SimpleCommand {
